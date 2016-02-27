@@ -1,0 +1,42 @@
+#version 330 core
+
+// Input vertex data, different for all executions of this shader.
+layout(location = 0) in vec3 vertexPosition_modelspace;
+
+// Values that stay constant for the whole mesh.
+
+
+//variables for the 4D to 3D transformation
+uniform vec4 trans4;
+uniform float theta4;
+uniform mat4 Rotation4;
+
+//variable for the 3D to 2D transformation
+uniform mat4 World;
+uniform mat4 ViewProj;
+
+void main()
+{
+
+    vec4 vertex = vec4(vertexPosition_modelspace, 10);
+    //Project from 4D to 3D here
+    //Translation first 
+    vec4 vec4_t = vertex;
+    //Rotation 
+    vec4 vec4_r = Rotation4 * vec4_t;
+    //Projection 
+    float radius4 = length(vec4_r);
+    float cot = 1/(tan(3.1416/8)*vec4_r.w);
+    vec4 vec3_m;
+    vec3_m.x = vec4_r.x*cot;
+    vec3_m.y = vec4_r.y*cot;
+    vec3_m.z = vec4_r.z*cot; 
+    vec3_m.w = 1;
+
+    //Projection from 3D to 2D here
+    vec4 WorldVertex = World * vec3_m;
+    gl_Position = ViewProj * WorldVertex;
+	// Output position of the vertex, in clip space : MVP * position
+
+}
+
