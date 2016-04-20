@@ -753,6 +753,26 @@ __Matrix4x4 __Matrix4x4RotationXW(__scalar value)
     return result;
 }
 
+__Matrix4x4 __Matrix4x4RotationYW(__scalar value)
+{
+    __Matrix4x4 result = __Matrix4x4Identity();
+    result.SetElement(1,1, cos(value));
+    result.SetElement(1,3, -sin(value));
+    result.SetElement(3,1, sin(value));
+    result.SetElement(3,3, cos(value));
+    return result;
+}
+
+__Matrix4x4 __Matrix4x4RotationZW(__scalar value)
+{
+    __Matrix4x4 result = __Matrix4x4Identity();
+    result.SetElement(2,2, cos(value));
+    result.SetElement(2,3, -sin(value));
+    result.SetElement(3,2, sin(value));
+    result.SetElement(3,3, cos(value));
+    return result;
+}
+
 //5x5 SINGLE PLANE 4D ROTATION MATRICES
 __Matrix5x5 __Matrix5x5RotationXW(__scalar value)
 {
