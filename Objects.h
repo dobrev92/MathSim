@@ -14,7 +14,7 @@ class __Object
         //all objects are defined by a position in a 4 dimensional space
         __Vector4 position;
         __Matrix4x4 Orientation_3D;
-        __Matrix5x5 Orientation_4D;
+        __Matrix4x4 Orientation_4D;
 
         //Here are angles that define orientation in 4 dimensional space
         //First three angles define orientation in 3 dimensional space
@@ -181,6 +181,7 @@ class __GeometryObject: public __Object
         virtual int InitWireIndexBuffer();
         virtual int Render(__Camera* camera, bool wireframe);
         virtual int Init();
+        __Geometry* GetGeomPtr(){return geom;}
 
         void SetWireframeLineWidth(__scalar width){LineWidth = width;}
         void SetScale(__Vector4 _scale){scale = _scale;}
@@ -223,13 +224,13 @@ class __Sphere: public __GeometryObject
         virtual ~__Sphere();
 };
 
-class __HypercubeProjection: public __GeometryObject
+class __HypercubeFaceProjection: public __GeometryObject
 {
     public:
         float angle;
-        __HypercubeProjection(__Render* m_render, __Vector4 m_pos);
+        __HypercubeFaceProjection(__Render* m_render, __Vector4 m_pos);
         int Render(__Camera* camera, bool wireframe);
-        virtual ~__HypercubeProjection();
+        virtual ~__HypercubeFaceProjection();
 };
 
 #endif

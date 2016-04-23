@@ -350,8 +350,8 @@ int __GLProjectionProgram::SetViewProjMatrix(__Matrix4x4 mat)
 
 int __GLProjectionProgram::SetTranslationVector4(__Vector4 vec)
 {
-    float vector[4] = {vec.X(), vec.Y(), vec.Z(), vec.W()};
-    glUniform4fv(trans4Location, 4, vector);
+    float vector[4] = {vec.X(), vec.Y(), vec.Z(), vec.W(),};
+    glUniform4fv(trans4Location, 1, vector);
     return 1;
 }
 

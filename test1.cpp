@@ -26,7 +26,9 @@ int main()
     rotating = false;
     glfw = new __GlfwWrapper();
     render = new __GLRender();
-    __scalar angVelocity = 0;
+    __scalar angVelocityXW = 0;
+    __scalar angVelocityYW = 0;
+    __scalar angVelocityZW = 0;
 #ifdef GUI
     twBar = new __AntTweakBarWrapper();
     twBar->SizeChange(848, 480);
@@ -34,8 +36,12 @@ int main()
     twBar->CreateSystemSettingsBar(&ToggleFullscreen);
 
     __TwBar* bar = new __TwBar("Rotation");
-    __TwVariable* rotation = new __TwVariable(bar, "Angular Velocity", TW_TYPE_FLOAT, &angVelocity, "step=0.01");
-    bar->AddVariable(rotation);
+    __TwVariable* rotationXW = new __TwVariable(bar, "Angular Velocity XW", TW_TYPE_FLOAT, &angVelocityXW, "step=0.01");
+    __TwVariable* rotationYW = new __TwVariable(bar, "Angular Velocity YW", TW_TYPE_FLOAT, &angVelocityYW, "step=0.01");
+    __TwVariable* rotationZW = new __TwVariable(bar, "Angular Velocity ZW", TW_TYPE_FLOAT, &angVelocityZW, "step=0.01");
+    bar->AddVariable(rotationXW);
+    bar->AddVariable(rotationYW);
+    bar->AddVariable(rotationZW);
     twBar->AddBar(bar);
 #endif
     glfw->SetMousePosFunc(&mouseMove);
@@ -47,12 +53,12 @@ int main()
     camera = new __Camera(__Vector4(0,0,10,1));
     camera->SetProjectionMatrix(__Matrix4x4PerspectiveFov(__PI/4, (__scalar)16/9, 1, 1000));
     //__Line* line = new __Line(render, __Vector4(0, 3, 0, 1),50);
-    __HypercubeProjection* cube = new __HypercubeProjection(render, __Vector4(0,0,0,1));
+    __HypercubeFaceProjection* cube = new __HypercubeFaceProjection(render, __Vector4(0,0,0,1));
     __Plane* plane = new __Plane(render, __Vector4(0,-2,0,1), 10, 10);
     plane->SetScale(__Vector4(10,10,10,0));
     //__Sphere* sphere = new __Sphere(render, __Vector4(0,0,0,1),5,20,20);
     //sphere->SetWireframeLineWidth(3);
-    cube->SetWireframeLineWidth(1);
+    cube->SetWireframeLineWidth(5);
     
     float deltaTime = 0;
     while(glfw->IsInRenderLoop())
@@ -61,9 +67,11 @@ int main()
         glfw->ResetTimer();
         UpdateCamera(camera, deltaTime);
         render->ClearScreen();
-        cube->RotateXZ(deltaTime*angVelocity);
+        cube->RotateXW(deltaTime*angVelocityXW);
+        cube->RotateYW(deltaTime*angVelocityYW);
+        cube->RotateZW(deltaTime*angVelocityZW);
         //line->Render(camera, true);
-        plane->Render(camera, true);
+        //plane->Render(camera, true);
         cube->Render(camera, true);
         //sphere->Render(camera, true);
 #ifdef GUI

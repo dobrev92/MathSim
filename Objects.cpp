@@ -5,6 +5,7 @@ __Object::__Object(__Vector4 m_pos)
 {
     position = m_pos;
     Orientation_3D = __Matrix4x4Identity();
+    Orientation_4D = __Matrix4x4Identity();
     angleXY = 0;
     angleXZ = 0;
     angleZY = 0;
@@ -35,6 +36,30 @@ void __Object::RotateZY(__scalar angle)
     if (angleZY > 2*__PI)
         angleZY -= 2*__PI;
     Orientation_3D = __Matrix4x4RotationX(angle) * Orientation_3D;
+}
+
+void __Object::RotateXW(__scalar angle)
+{
+    angleXW += angle;
+    if(angleXW > 2*__PI)
+        angleXW -= 2*__PI;
+    Orientation_4D = __Matrix4x4RotationXW(angle) * Orientation_4D;
+}
+
+void __Object::RotateYW(__scalar angle)
+{
+    angleXW += angle;
+    if(angleXW > 2*__PI)
+        angleXW -= 2*__PI;
+    Orientation_4D = __Matrix4x4RotationYW(angle) * Orientation_4D;
+}
+
+void __Object::RotateZW(__scalar angle)
+{
+    angleXW += angle;
+    if(angleXW > 2*__PI)
+        angleXW -= 2*__PI;
+    Orientation_4D = __Matrix4x4RotationZW(angle) * Orientation_4D;
 }
 
 void __Object::MoveBasisX(__scalar amount)
@@ -520,18 +545,14 @@ int __GeometryObject::Render(__Camera* camera, bool wireframe)
 
     vertexbuffer->BindBuffer();
     WireElementBuffer->BindBuffer();
-    //render->UseBasicProgram();
     __Matrix4x4 trans = __TranslationMatrix4x4(position.X(),position.Y(),position.Z()) * ComputeTransformMatrix() * __ScaleMatrix4x4(scale.X(), scale.Y(), scale.Z());
     __BasicProgram* prog = render->GetBasicProgram();
     prog->UseProgram();
     prog->SetWorldMatrix(trans);
-    //render->SetBasicProgramWorldMatrix(trans);
     __Matrix4x4 mat = camera->ComputeTransformMatrix();
     prog->SetViewProjMatrix(mat);
-    //render->SetBasicProgramViewProjMatrix(mat);
     glLineWidth(LineWidth);
     glPointSize(10);
-    //glDrawArrays(GL_POINTS, 0, geom->GetNumVertices());
     render->DrawIndexedLines(geom->GetNumWireIndices(), 0);
     glDisableVertexAttribArray(0);
     return 1;
@@ -641,26 +662,24 @@ __Sphere::~__Sphere()
 
 //__HypercubeProjection********************************************************************************************************
 
-__HypercubeProjection::__HypercubeProjection(__Render* m_render, __Vector4 m_pos):__GeometryObject(m_render, m_pos)
+__HypercubeFaceProjection::__HypercubeFaceProjection(__Render* m_render, __Vector4 m_pos):__GeometryObject(m_render, m_pos)
 {
     angle = 0;
     geom = new __CubeGeometry(1, 1, 1);
     Init();
-    std::cout<<"__HypercubeProjection instance created\n";
+    std::cout<<"__HypercubeFaceProjection instance created\n";
 }
 
-int __HypercubeProjection::Render(__Camera* camera, bool wireframe)
+int __HypercubeFaceProjection::Render(__Camera* camera, bool wireframe)
 {
-    
-    angle = __PI/2;
     vertexbuffer->BindBuffer();
     WireElementBuffer->BindBuffer();
     //render->UseBasicProgram();
-    __Matrix4x4 trans = __TranslationMatrix4x4(position.X(),position.Y(),position.Z()) * ComputeTransformMatrix() * __ScaleMatrix4x4(scale.X(), scale.Y(), scale.Z());
+    __Matrix4x4 trans = __TranslationMatrix4x4(position.X(),position.Y(),position.Z()) * ComputeTransformMatrix() * __ScaleMatrix4x4(10, 10, 10);
     __ProjectionProgram* prog = render->GetProjectionProgram();
     prog->UseProgram();
-    prog->SetTranslationVector4(__Vector4(0,0,0,100));
-    prog->SetRotationMatrix4(__Matrix4x4RotationXW(angle));
+    prog->SetTranslationVector4(__Vector4(0,0,0,10));
+    prog->SetRotationMatrix4(Orientation_4D);
     prog->SetWorldMatrix(trans);
     //render->SetBasicProgramWorldMatrix(trans);
     __Matrix4x4 mat = camera->ComputeTransformMatrix();
@@ -676,7 +695,7 @@ int __HypercubeProjection::Render(__Camera* camera, bool wireframe)
 
 
 
-__HypercubeProjection::~__HypercubeProjection()
+__HypercubeFaceProjection::~__HypercubeFaceProjection()
 {
-    std::cout<<"__HypercubeProjection instance destroyed\n";
+    std::cout<<"__HypercubeFaceProjection instance destroyed\n";
 }

@@ -17,26 +17,33 @@ uniform mat4 ViewProj;
 
 void main()
 {
+    
+    bool perspective = true;
 
-    vec4 vertex = vec4(vertexPosition_modelspace, 10);
+    vec4 vertex = vec4(vertexPosition_modelspace, 0);
     //Project from 4D to 3D here
     //Translation first 
     vec4 vec4_t = vertex;
+    vec4_t *= 5;
     //Rotation 
     vec4 vec4_r = Rotation4 * vec4_t;
-    //Projection 
-    float radius4 = length(vec4_r);
-    float cot = 1/(tan(3.1416/8)*vec4_r.w);
+    vec4_r += trans4;
+    //Projection
     vec4 vec3_m;
-    vec3_m.x = vec4_r.x*cot;
-    vec3_m.y = vec4_r.y*cot;
-    vec3_m.z = vec4_r.z*cot; 
-    vec3_m.w = 1;
+
+    if(perspective)
+    {
+        float cot = 1/(tan(3.1416/4)*vec4_r.w);
+        vec3_m.x = vec4_r.x*cot;
+        vec3_m.y = vec4_r.y*cot;
+        vec3_m.z = vec4_r.z*cot;
+        vec3_m.w = 1;
+    }
 
     //Projection from 3D to 2D here
     vec4 WorldVertex = World * vec3_m;
     gl_Position = ViewProj * WorldVertex;
-	// Output position of the vertex, in clip space : MVP * position
+    // Output position of the vertex, in clip space : MVP * position
 
 }
 
