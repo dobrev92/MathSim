@@ -246,9 +246,9 @@ __GLProgram::~__GLProgram()
 __GLBasicProgram::__GLBasicProgram()
 {
     
-    if(InitVertexShaderFromFile("SimpleTransform.vertexshader"))
+    if(InitVertexShaderFromFile("shaders/SimpleTransform.vertexshader"))
         std::cout<<"Vertex Shader Compiled\n";  
-    if(InitFragmentShaderFromFile("SingleColor.fragmentshader"))
+    if(InitFragmentShaderFromFile("shaders/SingleColor.fragmentshader"))
         std::cout<<"Fragment Shader Compiled\n";
     if(LinkProgram())
         std::cout<<"Program Linked\n";
@@ -298,9 +298,9 @@ __GLProjectionProgram::__GLProjectionProgram()
 
 int __GLProjectionProgram::Init()
 {
-    if(InitVertexShaderFromFile("ProjectionTransform.vertexshader"))
+    if(InitVertexShaderFromFile("shaders/ProjectionTransform.vertexshader"))
         std::cout<<"Vertex Shader Compiled\n";  
-    if(InitFragmentShaderFromFile("SingleColor.fragmentshader"))
+    if(InitFragmentShaderFromFile("shaders/SingleColor.fragmentshader"))
         std::cout<<"Fragment Shader Compiled\n";
     if(LinkProgram())
         std::cout<<"Program Linked\n";
