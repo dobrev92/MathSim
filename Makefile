@@ -5,6 +5,8 @@ CFLAGS = -Wall -c
 TESSERACT_DEMO_OBJS = GLRender.o linear_algebra.o TwBarWrapper.o GlfwWrapper.o Objects.o tesseract_demo.o
 LIBS = -lGL -lGLEW -lglfw -lAntTweakBar 
 
+all: tesseract_demo
+
 tesseract_demo: $(TESSERACT_DEMO_OBJS)
 	$(CC) -o tesseract_demo -I /usr/include/GLFW $(LIBS) $(TESSERACT_DEMO_OBJS) shader.cpp
 	mkdir -p out
