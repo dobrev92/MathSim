@@ -1,5 +1,6 @@
 #include "Objects.h"
-#include<iostream>
+#include <iostream>
+#include "debug.h"
 
 __Object::__Object(__Vector4 m_pos)
 {
@@ -96,6 +97,13 @@ __Matrix4x4 __Camera::ComputeTransformMatrix()
     return result;
 }
 
+__Matrix4x4 __Camera::ComputeTransformNoRot()
+{
+	__Matrix4x4 result = __TranslationMatrix4x4(-position.X(), -position.Y(), -position.Z());
+	result = ProjectionMatrix * result;
+	return result;
+}
+
 void __Camera::UpdatePos(__scalar amount)
 {
     __Vector4 look = ComputeTransformMatrix().GetRow(2);
@@ -116,31 +124,32 @@ void __Camera::Strafe(__scalar amount)
 
 __Geometry::__Geometry()
 {
-    vertices = 0;
-    triIndices = 0;
-    wireframeIndices = 0;
+	vertices = 0;
+	triIndices = 0;
+	wireframeIndices = 0;
 
-    std::cout<<"__Geometry instance created\n";
+	dbg_info("__Geometry instance created\n");
 }
 
 __Geometry::~__Geometry()
 {
-    if(vertices)
-        delete[] vertices;
-    if(triIndices)
-        delete[] triIndices;
-    if(wireframeIndices)
-        delete[] wireframeIndices;
+	if(vertices)
+		delete[] vertices;
 
-    std::cout<<"__Geometry instance destroyed\n";
+	if(triIndices)
+		delete[] triIndices;
+
+	if(wireframeIndices)
+		delete[] wireframeIndices;
+
+	dbg_info("__Geometry instance destroyed\n");
 }
 
 void __Geometry::Transform(__Matrix4x4 mat)
 {
-    for(int i=0; i<numVertices; i++)
-    {
-        vertices[i] = __Vec4Transform(vertices[i], mat);
-    }
+	for(int i = 0; i < numVertices; i++) {
+		vertices[i] = __Vec4Transform(vertices[i], mat);
+	}
 }
 
 void __Geometry::Translate(__Vector4 trans)
@@ -489,17 +498,52 @@ int __SphereGeometry::InitWireframeIndices()
     return 1;
 }
 
+//__QuadGeometry******************************************************************************
+__QuadGeometry::__QuadGeometry()
+{
+	InitVertices();
+	InitTriIndices();
+}
+
+int __QuadGeometry::InitVertices()
+{
+	numVertices = 4;
+	vertices = new __Vector4[numVertices];
+
+	vertices[0] = __Vector4(-1.0f, 1.0f, 0.0f, 0.0f);
+	vertices[1] = __Vector4(1.0f, 1.0f, 0.0f, 0.0f);
+	vertices[2] = __Vector4(-1.0f, -1.0f, 0.0f, 0.0f);
+	vertices[3] = __Vector4(1.0f, -1.0f, 0.0f, 0.0f);
+
+	return 1;
+}
+
+int __QuadGeometry::InitTriIndices()
+{
+	numWireIndices = 6;
+	wireframeIndices = new unsigned short[numWireIndices];
+
+	wireframeIndices[0] = 0;
+	wireframeIndices[1] = 1;
+	wireframeIndices[2] = 2;
+	wireframeIndices[3] = 2;
+	wireframeIndices[4] = 1;
+	wireframeIndices[5] = 3;
+
+	return 1;
+}
+
 //__GeometryObject*********************************************************************************************************
 __GeometryObject::__GeometryObject(__Render* m_render, __Vector4 _pos): __Object(_pos)
 {
-    render = m_render;
-    scale = __Vector4(1,1,1,1);
-    LineWidth = 1;
-    geom = 0;
-    vertexbuffer = 0;
-    TriElementBuffer = 0;
-    WireElementBuffer = 0;
-    std::cout<<"__GeometryObject instance created\n";
+	render = m_render;
+	scale = __Vector4(1,1,1,1);
+	LineWidth = 1;
+	geom = 0;
+	vertexbuffer = 0;
+	TriElementBuffer = 0;
+	WireElementBuffer = 0;
+	dbg_info("__GeometryObject instance created\n");
 }
 
 int __GeometryObject::InitVertexBuffer()
@@ -562,33 +606,33 @@ int __GeometryObject::Render(__Camera* camera, bool wireframe)
 
 __Matrix4x4 __GeometryObject::ComputeTransformMatrix()
 {
-    return Orientation_3D;
+	return Orientation_3D;
 }
 
 __GeometryObject::~__GeometryObject()
 {
-    if(vertexbuffer)
-    {
-        render->DeleteBuffer(vertexbuffer);
-        vertexbuffer = 0;
-        std::cout<<"__GeometryObject vertexbuffer deleted\n";
-    }
-    if(TriElementBuffer)
-    {
-        render->DeleteBuffer(TriElementBuffer);
-        TriElementBuffer = 0;
-        std::cout<<"__GeometryObject TriElementBuffer deleted\n";
-    }
-    if(WireElementBuffer)
-    {
-        render->DeleteBuffer(WireElementBuffer);
-        WireElementBuffer = 0;
-        std::cout<<"__GeometryObject WireElementBuffer deleted\n";
-    }
+	if (vertexbuffer) {
+		render->DeleteBuffer(vertexbuffer);
+		vertexbuffer = 0;
+		dbg_info("vertexbuffer deleted\n");
+	}
 
-    if(geom)
-        delete geom;
-    std::cout<<"__GeometryObject instance destroyed\n";
+	if (TriElementBuffer) {
+		render->DeleteBuffer(TriElementBuffer); 
+		TriElementBuffer = 0;
+		dbg_info("TriElementBuffer deleted\n");
+	}
+
+	if (WireElementBuffer) {
+		render->DeleteBuffer(WireElementBuffer);
+		WireElementBuffer = 0;
+		dbg_info("WireElementBuffer deleted\n");
+	}
+
+	if (geom)
+		delete geom;
+
+	dbg_info("__GeometryObject instance destroyed\n");
 }
 //*******************************************************************Line Class************************************************************
 
@@ -693,9 +737,69 @@ int __HypercubeFaceProjection::Render(__Camera* camera, bool wireframe)
     return 1;
 }
 
-
-
 __HypercubeFaceProjection::~__HypercubeFaceProjection()
 {
     std::cout<<"__HypercubeFaceProjection instance destroyed\n";
 }
+
+//__ParticleSystem***************************************************************************
+__ParticleSystem::__ParticleSystem(__Render* m_render, __Vector4 m_pos):__GeometryObject(m_render, m_pos)
+{
+	maxParticles = 3;
+	particles = new __Particle[maxParticles];
+	geom = new __QuadGeometry();
+	Init();
+	InitPositionBuffer();
+	dbg_info("__ParticleSystem instance created\n");
+}
+
+int __ParticleSystem::InitPositionBuffer(void)
+{
+	float pos[] = { -5.0f, 10.0f, 0.0f,
+			0.0f, 10.0f, 0.0f,
+			5.0f, 10.0f, 0.0f, };
+	glGenBuffers(1, &positionBuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, positionBuffer);
+	glBufferData(GL_ARRAY_BUFFER, maxParticles * 3 * sizeof(float), pos, GL_STREAM_DRAW);	
+	return 1;
+}
+
+int __ParticleSystem::Render(__Camera* camera, bool wireframe)
+{
+	vertexbuffer->BindBuffer();
+	WireElementBuffer->BindBuffer();
+	__ParticleProgram* prog = render->GetParticleProgram();
+	prog->UseProgram();
+
+	__Matrix4x4 mat = camera->ComputeTransformMatrix();
+	prog->setProjMatrix(mat);
+	glEnableVertexAttribArray(1);
+	glBindBuffer(GL_ARRAY_BUFFER, positionBuffer);
+	glVertexAttribPointer(1,	// attribute.
+			3,		// size
+			GL_FLOAT,	// type
+			GL_FALSE,	// normalized?
+			0,		// stride
+			(void*)0	// array buffer offset
+			);
+	glVertexAttribDivisor(0, 0); // particles vertices : always reuse the same 4 vertices -> 0
+	glVertexAttribDivisor(1, 1); // positions : one per quad (its center) -> 1
+	glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0, 3);
+	glVertexAttribDivisor(1,0);
+	glDisableVertexAttribArray(0);
+	glDisableVertexAttribArray(1);
+	return 1;
+}
+
+__ParticleSystem::~__ParticleSystem()
+{
+	delete[] particles;
+
+	if (positionBuffer) {
+		glDeleteBuffers(1, &positionBuffer);
+		positionBuffer = 0;
+		dbg_info("positionBuffer deleted\n");
+	}
+	dbg_info("__ParticleSystem instance destroyed\n");
+}
+

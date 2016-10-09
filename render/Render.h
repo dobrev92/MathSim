@@ -26,8 +26,8 @@ class __Resource
 //Buffer type. For the moment vertex buffer or index(element) buffer
 enum __BufferType 
 {
-    __VertexBuffer,
-    __ElementBuffer
+	__VertexBuffer,
+	__ElementBuffer
 };
 
 class __Buffer: public __Resource
@@ -55,48 +55,58 @@ class __Buffer: public __Resource
 //That would be the rendering pipeline e.g. the vertex shader and the fragment shader
 class __Program: public __Resource
 {
-    public:
-        virtual int UseProgram()=0;
-        virtual ~__Program(){}
+	public:
+		virtual int UseProgram()=0;
+		//virtual int BindVertexBuffer(__Buffer* vetrexBuffer)=0;
+		//virtual int BindElemenBuffer(__Buffer* elementBuffer)=0;
+		virtual ~__Program(){}
 };
 
 class __BasicProgram: public __Program
 {
-    public:
-        virtual int SetWorldMatrix(__Matrix4x4 mat)=0;
-        virtual int SetViewProjMatrix(__Matrix4x4 mat)=0;
+	public:
+		virtual int SetWorldMatrix(__Matrix4x4 mat)=0;
+		virtual int SetViewProjMatrix(__Matrix4x4 mat)=0;
 };
 
 class __ProjectionProgram: public __Program
 {
-    public:
-        virtual int SetViewProjMatrix(__Matrix4x4 mat)=0;
-        virtual int SetWorldMatrix(__Matrix4x4 mat)=0;
-        virtual int SetTranslationVector4(__Vector4 vec)=0;
-        virtual int SetRotationMatrix4(__Matrix4x4 mat)=0;
+	public:
+		virtual int SetViewProjMatrix(__Matrix4x4 mat)=0;
+		virtual int SetWorldMatrix(__Matrix4x4 mat)=0;
+		virtual int SetTranslationVector4(__Vector4 vec)=0;
+		virtual int SetRotationMatrix4(__Matrix4x4 mat)=0;
 };
 
+class __ParticleProgram: public __Program
+{
+	public:
+		virtual int setPosition(__Vector3 vec)=0;
+		virtual int setProjMatrix(__Matrix4x4 mat)=0;
+};
 
 class __Render
 {
-    protected:
-        std::vector<__Buffer*> buffers;
+	protected:
+		std::vector<__Buffer*> buffers;
 
-    public:
-        virtual int Init()=0;
-        virtual int ViewPort(int x, int y, int width, int height)=0;
-        virtual int ClearScreen()=0;
-        virtual __Buffer* GetBuffer(__BufferType type, bool m_static)=0;
-        virtual int DeleteBuffer(__Buffer* buffer)=0;
-        virtual __BasicProgram* GetBasicProgram()=0;
-        virtual __ProjectionProgram* GetProjectionProgram()=0;
-        virtual int UseBasicProgram()=0;
-        virtual int SetBasicProgramWorldMatrix(__Matrix4x4 mat)=0;
-        virtual int SetBasicProgramViewProjMatrix(__Matrix4x4 mat)=0;
-        virtual int DrawIndexedLineLoop(int numIndices, const void* indices)=0;
-        virtual int DrawIndexedLines(int numIndices, const void* indices)=0;
-        virtual int PreContextSwitch()=0;
-        virtual int PostContextSwitch()=0;
+	public:
+		virtual int Init()=0;
+		virtual int ViewPort(int x, int y, int width, int height)=0;
+		virtual int ClearScreen()=0;
+		virtual __Buffer* GetBuffer(__BufferType type, bool m_static)=0;
+		virtual int DeleteBuffer(__Buffer* buffer)=0;
+		virtual __BasicProgram* GetBasicProgram()=0;
+		virtual __ProjectionProgram* GetProjectionProgram()=0;
+		virtual __ParticleProgram* GetParticleProgram()=0;
+		virtual int UseBasicProgram()=0;
+		virtual int SetBasicProgramWorldMatrix(__Matrix4x4 mat)=0;
+		virtual int SetBasicProgramViewProjMatrix(__Matrix4x4 mat)=0;
+		virtual int DrawIndexedLineLoop(int numIndices, const void* indices)=0;
+		virtual int DrawIndexedLines(int numIndices, const void* indices)=0;
+		virtual int DrawArraysInstanced(int first, int count, int primcount)=0;
+		virtual int PreContextSwitch()=0;
+		virtual int PostContextSwitch()=0;
 };
 
 #endif

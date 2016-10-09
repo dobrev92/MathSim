@@ -1,4 +1,5 @@
 #include "GLRender.h"
+#include "../debug.h"
 
 __GLBuffer::__GLBuffer(bool m_static)
 {
@@ -22,71 +23,71 @@ int __GLBuffer::ChangeType(__BufferType _type)
 
 GLenum __GLBuffer::GetGLTarget()
 {
-    switch (type)
-    {
-        case __VertexBuffer:
-            return GL_ARRAY_BUFFER;
-            break;
-        case __ElementBuffer:
-            return GL_ELEMENT_ARRAY_BUFFER;
-            break;
-    }
+	switch (type) {
+	case __VertexBuffer:
+		return GL_ARRAY_BUFFER;
+		break;
+	case __ElementBuffer:
+		return GL_ELEMENT_ARRAY_BUFFER;
+		break;
+	}
 }
 
 GLenum __GLBuffer::GetGLUsage()
 {
-    if(IsStatic)
-        return GL_STATIC_DRAW;
-    else
-        return GL_DYNAMIC_DRAW;
+	if (IsStatic) 
+		return GL_STATIC_DRAW;
+	else
+		return GL_STREAM_DRAW;
 }
     
 
 int __GLBuffer::SetBufferData(__BufferType _type, unsigned int _size, void* data)
 {
-    std::cout<<"function SetBufferData(__BufferType _type, unsigned int _size, void* data)\n";
-    size = _size;
-    type = _type;
+	dbg_info("function SetBufferData(__BufferType _type, unsigned int _size, void* data)\n");
+	size = _size;
+	type = _type;
 
-    std::cout<<"attempting glBindBuffer(GetGLTarget(), buffer) and glBufferData(GetGLTarget(), size, data, GetGLUsage())...";
-    glBindBuffer(GetGLTarget(), buffer);
-    glBufferData(GetGLTarget(), size, data, GetGLUsage());
-    std::cout<<"completed\n";
+	dbg_info("attempting glBindBuffer(GetGLTarget(), buffer) and glBufferData(GetGLTarget(), size, data, GetGLUsage())...");
+	glBindBuffer(GetGLTarget(), buffer);
+	glBufferData(GetGLTarget(), size, data, GetGLUsage());
+	std::cout<<"completed\n";
 
-    return 1;
+	return 1;
 }
 
 int __GLBuffer::GetBufferData(void* data)
 {
-    glBindBuffer(GetGLTarget(), buffer);
-    glGetBufferSubData(GetGLTarget(), 0, size, data);
-    return 1;
+	glBindBuffer(GetGLTarget(), buffer);
+	glGetBufferSubData(GetGLTarget(), 0, size, data);
+	return 1;
 }
 
 int __GLBuffer::BindBuffer()
 {
-    glBindBuffer(GetGLTarget(), buffer);
-    return 1;
+	glBindBuffer(GetGLTarget(), buffer);
+	return 1;
 }
 
 int __GLBuffer::PreContextSwitch()
 {
-    std::cout<<"__GLBuffer::PreContextSwitch(), ";
-    if(buffer)
-    {
-        std::cout<<"OpenGL buffer initialized, allocating RAM...";
-        dataPtr = malloc(size);
-        std::cout<<"completed\n"<<"attempting GetBufferData(dataPtr)...";
-        GetBufferData(dataPtr);
-        std::cout<<"completed\n"<<"glDeleteBuffers(1, &buffer)...";
-        glDeleteBuffers(1, &buffer);
-        buffer = 0;
-        std::cout<<"completed\n";
-    }
-    else
-        std::cout<<"OpenGL buffer not initialized, nothing to do\n";
-    std::cout<<"__GLBuffer::PreContextSwitch() completed\n";
-    return 1;
+	std::cout<<"__GLBuffer::PreContextSwitch(), ";
+
+	if (buffer) {
+		std::cout<<"OpenGL buffer initialized, allocating RAM...";
+		dataPtr = malloc(size);
+		std::cout<<"completed\n"<<"attempting GetBufferData(dataPtr)...";
+		GetBufferData(dataPtr);
+		std::cout<<"completed\n"<<"glDeleteBuffers(1, &buffer)...";
+		glDeleteBuffers(1, &buffer);
+		buffer = 0;
+		std::cout<<"completed\n";
+	} else {
+		std::cout<<"OpenGL buffer not initialized, nothing to do\n";
+	}
+
+	std::cout<<"__GLBuffer::PreContextSwitch() completed\n";
+	return 1;
 }
 
 int __GLBuffer::PostContextSwitch()
@@ -125,7 +126,6 @@ __GLBuffer::~__GLBuffer()
 }
 
 //__GLProgram********************************************************************************************************************************
-
 int __GLProgram::InitVertexShaderFromFile(const char* vertex_file_path)
 {
     VertexShaderID = glCreateShader(GL_VERTEX_SHADER);
@@ -237,9 +237,9 @@ int __GLProgram::LinkProgram()
 
 __GLProgram::~__GLProgram()
 {
-    if(ProgramID)
-        glDeleteProgram(ProgramID);
-    std::cout<<"__GLProgram destructor completed, __GLProgram Object destroyed\n";
+	if(ProgramID)
+		glDeleteProgram(ProgramID);
+	dbg_info("__GLProgram destructor completed, __GLProgram Object destroyed\n");
 }
 
 //__BasicProgram*************************************************************************************************************************
@@ -258,7 +258,6 @@ __GLBasicProgram::__GLBasicProgram()
     ViewProjMatrixLocation = glGetUniformLocation(ProgramID, "ViewProj");
 
     std::cout<<"__BasicProgram created\n";
-    glUseProgram(ProgramID);
 }
 
 int __GLBasicProgram::UseProgram()
@@ -290,6 +289,7 @@ int __GLBasicProgram::SetViewProjMatrix(__Matrix4x4 mat)
     glUniformMatrix4fv(ViewProjMatrixLocation, 1, GL_TRUE, mat.GetPointer());
     return 1;
 }
+
 //GLProjectionProgram*************************************************************************************************************************
 __GLProjectionProgram::__GLProjectionProgram()
 {
@@ -311,9 +311,7 @@ int __GLProjectionProgram::Init()
     trans4Location = glGetUniformLocation(ProgramID, "trans4");
     Rotation4Location = glGetUniformLocation(ProgramID, "Rotation4");
 
-    std::cout<<"__ProjectionProgram created\n";
-    glUseProgram(ProgramID);
-    
+    dbg_info("__ProjectionProgram created\n");
     return 1;
 }
 
@@ -333,8 +331,6 @@ int __GLProjectionProgram::UseProgram()
     
     return 1;
 }
-
-
 
 int __GLProjectionProgram::SetWorldMatrix(__Matrix4x4 mat)
 {
@@ -361,57 +357,123 @@ int __GLProjectionProgram::SetRotationMatrix4(__Matrix4x4 mat)
     return 1;
 }
 
+//GLParticleProgram*****************************************************************************************
+__GLParticleProgram::__GLParticleProgram()
+{
+    Init();
+}
+
+int __GLParticleProgram::Init()
+{
+	if (InitVertexShaderFromFile("shaders/Particle.vertexshader"))
+		dbg_info("Vertex Shader Compiled\n");  
+	if (InitFragmentShaderFromFile("shaders/SingleColor.fragmentshader"))
+		dbg_info("Fragment Shader Compiled\n");
+	if (LinkProgram())
+		dbg_info("Program Linked\n");
+    
+	//ProgramID = LoadShaders( "SimpleTransform.vertexshader", "SingleColor.fragmentshader" );
+
+	SystemPosLocation = glGetUniformLocation(ProgramID, "SystemPos");
+	ProjLocation = glGetUniformLocation(ProgramID, "ViewProj");
+
+	dbg_info("__ParticleProgram created\n");
+    
+	return 1;
+}
+
+int __GLParticleProgram::setPosition(__Vector3 vec)
+{
+	float vector[3] = {vec.X(), vec.Y(), vec.Z(),};
+	glUniform4fv(SystemPosLocation, 1, vector);
+	return 1;
+}
+
+int __GLParticleProgram::setProjMatrix(__Matrix4x4 mat)
+{
+	glUniformMatrix4fv(ProjLocation, 1, GL_TRUE, mat.GetPointer());
+	return 1;
+}
+
+int __GLParticleProgram::UseProgram()
+{
+	glUseProgram(ProgramID);
+
+	//1st attribute buffer: vertices 
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0,	// attribute
+			3,		// size
+			GL_FLOAT,	// type
+			GL_FALSE,	// normalized?
+			0,		// stride
+			(void*)0	// array buffer offset
+			);
+
+	//2nd attribute buffer: particles positions
+/*
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1,	// attribute
+			3,		// size
+			GL_FLOAT,	// type
+			GL_FALSE,	// normalized?
+			0,		// stride
+			(void*)0	// array buffer offset
+			);
+*/
+	return 1;
+}
 
 //************************************************************************GLRender************************************************************
 __GLRender::__GLRender()
 {
-    Init();
-    basicProg = new __GLBasicProgram();
-    projProg = new __GLProjectionProgram();
+	Init();
+	basicProg = new __GLBasicProgram();
+	projProg = new __GLProjectionProgram();
+	particleProg = new __GLParticleProgram();
 }
 
 int __GLRender::Init()
 {
-    glGenVertexArrays(1, &VertexArrayID);
-    glBindVertexArray(VertexArrayID);
+	glGenVertexArrays(1, &VertexArrayID);
+	glBindVertexArray(VertexArrayID);
 
-    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
-    return 1;
+	return 1;
 }
 
 int __GLRender::ClearScreen()
 {
-    glClear( GL_COLOR_BUFFER_BIT );
-    return 1;
+	glClear( GL_COLOR_BUFFER_BIT );
+	return 1;
 }
 
 int __GLRender::ViewPort(int x, int y, int width, int height)
 {
-    glViewport(x, y, width, height);
-    return 1;
+	glViewport(x, y, width, height);
+	return 1;
 }
 
 __Buffer* __GLRender::GetBuffer(__BufferType type, bool m_static)
 {
-    __Buffer* buff = new __GLBuffer(m_static);
-    buff->ChangeType(type);
-    buffers.push_back(buff);
-    return buff;
+	__Buffer* buff = new __GLBuffer(m_static);
+	buff->ChangeType(type);
+	buffers.push_back(buff);
+	return buff;
 }
 
 int __GLRender::DeleteBuffer(__Buffer* buffer)
 {
-    for(unsigned int i=0; i<buffers.size(); i++)
-    {
-        if(buffers[i] == buffer)
-        {
-            delete buffers[i];
-            buffers.erase(buffers.begin()+i);
-            break;
-        }
-    }
-    return 1;
+	for(unsigned int i=0; i<buffers.size(); i++)
+	{
+		if(buffers[i] == buffer)
+		{
+			delete buffers[i];
+			buffers.erase(buffers.begin()+i);
+			break;
+		}
+	}
+	return 1;
 }
 
 int __GLRender::UseBasicProgram()
@@ -444,38 +506,46 @@ int __GLRender::DrawIndexedLines(int numIndices, const void* indices)
     return 1;
 }
 
+int __GLRender::DrawArraysInstanced(int first, int count, int primcount)
+{
+	glDrawArraysInstanced(GL_TRIANGLE_STRIP, first, count, primcount);
+	return 1;
+}
+
 int __GLRender::PreContextSwitch()
 {
-    for(unsigned int i=0; i<buffers.size(); i++)
-    {
-        buffers[i]->PreContextSwitch();
-    }
-    delete basicProg;
-    delete projProg;
-    glDeleteVertexArrays(1, &VertexArrayID);
-    return 1;
+	for(unsigned int i=0; i<buffers.size(); i++) {
+		buffers[i]->PreContextSwitch();
+	}
+	delete basicProg;
+	delete projProg;
+	delete particleProg;
+	glDeleteVertexArrays(1, &VertexArrayID);
+	return 1;
 }
 
 int __GLRender::PostContextSwitch()
 {
-    Init();
-    basicProg = new __GLBasicProgram();
-    projProg = new __GLProjectionProgram();
-    for(unsigned int i=0; i<buffers.size(); i++)
-    {
-        buffers[i]->PostContextSwitch();
-    }
-    return 1;
+	Init();
+	basicProg = new __GLBasicProgram();
+	projProg = new __GLProjectionProgram();
+	particleProg = new __GLParticleProgram();
+
+	for(unsigned int i = 0; i < buffers.size(); i++) {
+		buffers[i]->PostContextSwitch();
+	}
+	return 1;
 }
 
 __GLRender::~__GLRender()
 {
-    for(unsigned int i=0; i<buffers.size(); i++)
-    {
-        delete buffers[i];
-    }
-    delete basicProg;
-    delete projProg;
-    glDeleteVertexArrays(1, &VertexArrayID);
+	for(unsigned int i=0; i<buffers.size(); i++) {
+		delete buffers[i];
+	}
 
+	delete basicProg;
+	delete projProg;
+	delete particleProg;
+
+	glDeleteVertexArrays(1, &VertexArrayID);
 }

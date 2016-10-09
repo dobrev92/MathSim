@@ -70,6 +70,7 @@ class __Camera: public __Object
         void SetSpeed(__scalar _speed){moveSpeed = _speed;}
         void SetProjectionMatrix(__Matrix4x4 proj){ProjectionMatrix = proj;}
         __Matrix4x4 ComputeTransformMatrix();
+	__Matrix4x4 ComputeTransformNoRot();
 };
 
 
@@ -164,6 +165,16 @@ class __SphereGeometry: public __Geometry
         int InitWireframeIndices();
 };
 
+class __QuadGeometry: public __Geometry
+{
+    protected:
+    public:
+        __QuadGeometry();
+        int Init() { return 1; }
+        int InitVertices();
+        int InitTriIndices();
+};
+
 class __GeometryObject: public __Object
 {
     protected:
@@ -231,6 +242,25 @@ class __HypercubeFaceProjection: public __GeometryObject
         __HypercubeFaceProjection(__Render* m_render, __Vector4 m_pos);
         int Render(__Camera* camera, bool wireframe);
         virtual ~__HypercubeFaceProjection();
+};
+
+struct __Particle 
+{
+	__Vector3 pos;
+};
+
+class __ParticleSystem: public __GeometryObject
+{
+	protected:
+		int maxParticles;
+		__Particle* particles;
+		GLuint positionBuffer;
+	 
+	public:
+		__ParticleSystem(__Render* m_render, __Vector4 m_pos);
+		int InitPositionBuffer(void);
+		int Render(__Camera* camera, bool wireframe);
+		virtual ~__ParticleSystem();
 };
 
 #endif

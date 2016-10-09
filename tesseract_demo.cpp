@@ -54,8 +54,9 @@ int main()
     camera->SetProjectionMatrix(__Matrix4x4PerspectiveFov(__PI/4, (__scalar)16/9, 1, 1000));
     //__Line* line = new __Line(render, __Vector4(0, 3, 0, 1),50);
     __HypercubeFaceProjection* cube = new __HypercubeFaceProjection(render, __Vector4(0,0,0,1));
-    __Plane* plane = new __Plane(render, __Vector4(0,-2,0,1), 10, 10);
-    plane->SetScale(__Vector4(10,10,10,0));
+    __Plane* plane = new __Plane(render, __Vector4(0,-10,0,1), 10, 10);
+    __ParticleSystem* system = new __ParticleSystem(render, __Vector4(0, 10, 0, 1));
+    plane->SetScale(__Vector4(10,10,10,1));
     //__Sphere* sphere = new __Sphere(render, __Vector4(0,0,0,1),5,20,20);
     //sphere->SetWireframeLineWidth(3);
     cube->SetWireframeLineWidth(5);
@@ -71,8 +72,9 @@ int main()
         cube->RotateYW(deltaTime*angVelocityYW);
         cube->RotateZW(deltaTime*angVelocityZW);
         //line->Render(camera, true);
-        //plane->Render(camera, true);
+        plane->Render(camera, true);
         cube->Render(camera, true);
+        system->Render(camera, false);
         //sphere->Render(camera, true);
 #ifdef GUI
         twBar->Render();
@@ -81,6 +83,7 @@ int main()
     }
     delete cube;
     delete plane;
+    delete system;
     //delete sphere;
 #ifdef GUI
     delete twBar;

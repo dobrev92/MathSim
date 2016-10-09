@@ -78,34 +78,53 @@ class __GLProjectionProgram: public __GLProgram, public __ProjectionProgram
         virtual ~__GLProjectionProgram(){}
 };
 
+class __GLParticleProgram: public __GLProgram, public __ParticleProgram
+{
+	protected:
+		GLuint SystemPosLocation;
+		GLuint ProjLocation;
+		int Init();
+	public:
+		__GLParticleProgram();
+		int setPosition(__Vector3 vec);
+		int setProjMatrix(__Matrix4x4 mat);
+		int UseProgram();
+		int PreContextSwitch() { return 1; }
+		int PostContextSwitch() { return 1; } 
+		virtual ~__GLParticleProgram() {}
+};
+
 class __GLRender: public __Render
 {
-    protected:
-        GLuint VertexArrayID;
-        __BasicProgram* basicProg;
-        __ProjectionProgram* projProg;
-    public:
-        __GLRender();
-        int Init();
-        int ClearScreen();
+	protected:
+		GLuint VertexArrayID;
+		__BasicProgram* basicProg;
+		__ProjectionProgram* projProg;
+		__ParticleProgram* particleProg;
+	public:
+		__GLRender();
+		int Init();
+		int ClearScreen();
 
-        __Buffer* GetBuffer(__BufferType type, bool m_static);
-        int DeleteBuffer(__Buffer* buffer);
+		__Buffer* GetBuffer(__BufferType type, bool m_static);
+		int DeleteBuffer(__Buffer* buffer);
         
-        __BasicProgram* GetBasicProgram(){return basicProg;}
-        __ProjectionProgram* GetProjectionProgram(){return projProg;}
-        int UseBasicProgram();
-        int SetBasicProgramWorldMatrix(__Matrix4x4 mat);
-        int SetBasicProgramViewProjMatrix(__Matrix4x4 mat);
+		__BasicProgram* GetBasicProgram() { return basicProg; } 
+		__ProjectionProgram* GetProjectionProgram() { return projProg; }
+		__ParticleProgram* GetParticleProgram() { return particleProg; } 
+		int UseBasicProgram();
+		int SetBasicProgramWorldMatrix(__Matrix4x4 mat);
+		int SetBasicProgramViewProjMatrix(__Matrix4x4 mat);
         
-        int DrawIndexedLineLoop(int numIndices, const void* indices);
-        int DrawIndexedLines(int numIndices, const void* indices);
+		int DrawIndexedLineLoop(int numIndices, const void* indices);
+		int DrawIndexedLines(int numIndices, const void* indices);
+		int DrawArraysInstanced(int first, int count, int primcount);
 
-        int ViewPort(int x, int y, int width, int height);
-
-        int PreContextSwitch();
-        int PostContextSwitch();
-        ~__GLRender();
+		int ViewPort(int x, int y, int width, int height);
+		
+		int PreContextSwitch();
+		int PostContextSwitch();
+		~__GLRender();
 };
 
 #endif
