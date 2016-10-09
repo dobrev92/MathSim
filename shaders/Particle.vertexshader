@@ -1,0 +1,15 @@
+#version 330 core 
+
+layout(location = 0) in vec3 vertexPosition_modelspace;
+layout(location = 1) in vec3 particle_pos;
+
+// Values that stay constant for the whole mesh.
+uniform mat4 ViewProj;
+
+void main()
+{
+	vec3 vertex = vertexPosition_modelspace + particle_pos;
+	gl_Position = ViewProj * vec4(vertex, 1);
+
+}
+
